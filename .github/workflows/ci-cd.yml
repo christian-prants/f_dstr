@@ -66,6 +66,7 @@ jobs:
 
       - name: Deploy to Staging
         run: |
+          kubectl create namespace staging --dry-run=client -o yaml | kubectl apply -f -
           kubectl apply -f k8s/staging-deployment.yaml
           kubectl apply -f k8s/staging-service.yaml
 
@@ -97,5 +98,6 @@ jobs:
 
       - name: Deploy to Production
         run: |
+          kubectl create namespace production --dry-run=client -o yaml | kubectl apply -f -
           kubectl apply -f k8s/production-deployment.yaml
           kubectl apply -f k8s/production-service.yaml
