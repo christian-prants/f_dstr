@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-staging
+  namespace: staging
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: app-staging
+  template:
+    metadata:
+      labels:
+        app: app-staging
+    spec:
+      containers:
+      - name: app
+        image: christianprants/desastres:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: "staging"

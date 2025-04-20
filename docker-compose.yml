@@ -1,14 +1,35 @@
-version: '3'
+version: '3.8'
 services:
   app:
     build: .
     ports:
       - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_DATASOURCE_URL=jdbc:oracle:thin:@db:1521/ORCLCDB
+      - SPRING_DATASOURCE_USERNAME=SEU_USUARIO
+      - SPRING_DATASOURCE_PASSWORD=SUA_SENHA
     depends_on:
       - db
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
   db:
     image: oracle/database:19.3.0-ee
     environment:
       - ORACLE_PWD=080297
     ports:
       - "1521:1521"
+    volumes:
+      - oracle-data:/opt/oracle/oradata
+    healthcheck:
+      test: ["CMD", "sqlplus", "-L", "sys/080297@localhost:1521/ORCLCDB as sysdba", "<", "/dev/null"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+volumes:
+  oracle-data:
