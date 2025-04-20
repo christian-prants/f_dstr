@@ -68,9 +68,8 @@ jobs:
       - name: Deploy to Staging
         run: |
           kubectl create namespace staging --dry-run=client -o yaml | kubectl apply -f -
-          kubectl apply -f k8s/staging-deployment.yaml --validate=false
-          kubectl apply -f k8s/staging-service.yaml --validate=false
-          kubectl rollout status deployment/app-staging -n staging --timeout=90s
+          kubectl apply -f k8s/staging-deployment.yaml
+          kubectl apply -f k8s/staging-service.yaml
 
   # --------------------------------------------
   # ESTÁGIO 3: Deploy para Production (Sem Aprovação)
@@ -95,6 +94,5 @@ jobs:
       - name: Deploy to Production
         run: |
           kubectl create namespace production --dry-run=client -o yaml | kubectl apply -f -
-          kubectl apply -f k8s/production-deployment.yaml --validate=false
-          kubectl apply -f k8s/production-service.yaml --validate=false
-          kubectl rollout status deployment/app-production -n production --timeout=90s
+          kubectl apply -f k8s/production-deployment.yaml
+          kubectl apply -f k8s/production-service.yaml
