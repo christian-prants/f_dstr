@@ -52,36 +52,92 @@ jobs:
     needs: build-and-test
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
+    
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install kubectl
-        uses: azure/setup-kubectl@v3
+      - name: Install Kind and kubectl
+        run: |
+          # Instala Kind
+          curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.20.0/kind-linux-amd64
+          chmod +x ./kind
+          sudo mv ./kind /usr/local/bin/kind
+          
+          # Instala kubectl
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
 
-      - name: Configure Kubernetes (Staging)
+      - name: Create Kind cluster for staging
+        run: |
+          kind create cluster --name staging --config=- <<EOF
+          kind: Cluster
+          apiVersion: kind.x-k8s.io/v1alpha4
+          nodes:
+          - role: control-plane
+            extraPortMappings:
+            - containerPort: 80
+              hostPort: 80
+              protocol: TCP
+          EOF
+
+      - name: Configure kubeconfig
         run: |
           mkdir -p ~/.kube
-          echo "${{ secrets.KUBE_CONFIG_STAGING }}" > ~/.kube/config
-          kubectl config use-context kind-staging
+          kind get kubeconfig --name staging > ~/.kube/config
+          kubectl cluster-info
+
+      - name: Verify cluster readiness
+        run: |
+          kubectl wait --for=condition=Ready nodes --all --timeout=120s
+          kubectl get nodes
 
       - name: Deploy to Staging
         run: |
+          # Cria namespace se não existir
           kubectl create namespace staging --dry-run=client -o yaml | kubectl apply -f -
+          
+          # Aplica os manifests com validação desligada temporariamente
           kubectl apply -f k8s/staging-deployment.yaml
           kubectl apply -f k8s/staging-service.yaml
+          
+          # Verifica os recursos implantados
+          kubectl get all -n staging
+          kubectl rollout status deployment/app-staging -n staging --timeout=90s
 
   # --------------------------------------------
-  # ESTÁGIO 3: Deploy para Production (Com Aprovação)
+  # ESTÁGIO 3: Deploy para Production
   # --------------------------------------------
   deploy-production:
     needs: deploy-staging
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
+    
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install kubectl
-        uses: azure/setup-kubectl@v3
+      - name: Install Kind and kubectl
+        run: |
+          curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.20.0/kind-linux-amd64
+          chmod +x ./kind
+          sudo mv ./kind /usr/local/bin/kind
+          
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
+
+      - name: Create Kind cluster for production
+        run: |
+          kind create cluster --name production --config=- <<EOF
+          kind: Cluster
+          apiVersion: kind.x-k8s.io/v1alpha4
+          nodes:
+          - role: control-plane
+            extraPortMappings:
+            - containerPort: 80
+              hostPort: 81  # Porta diferente para produção
+              protocol: TCP
+          EOF
 
       - name: Approve Production Deployment
         uses: trstringer/manual-approval@v1
@@ -90,14 +146,22 @@ jobs:
           approvers: "christian-prants"
           minimum-approvals: 1
 
-      - name: Configure Kubernetes (Production)
+      - name: Configure kubeconfig for production
         run: |
           mkdir -p ~/.kube
-          echo "${{ secrets.KUBE_CONFIG_PRODUCTION }}" > ~/.kube/config
-          kubectl config use-context kind-production
+          kind get kubeconfig --name production > ~/.kube/config
+          kubectl cluster-info
 
       - name: Deploy to Production
         run: |
           kubectl create namespace production --dry-run=client -o yaml | kubectl apply -f -
           kubectl apply -f k8s/production-deployment.yaml
           kubectl apply -f k8s/production-service.yaml
+          kubectl get all -n production
+          kubectl rollout status deployment/app-production -n production --timeout=90s
+
+      - name: Clean up clusters (optional)
+        if: always()
+        run: |
+          kind delete cluster --name staging
+          kind delete cluster --name production
