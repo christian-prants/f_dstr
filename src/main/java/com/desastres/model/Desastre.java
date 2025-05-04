@@ -29,7 +29,7 @@ public class Desastre {
     @Column(name = "hr_duracao") // Nome da coluna no banco de dados
     private Integer duracao;        // Duração do desastre
     
-    @Column(name = "t_localizao_id_localizacao") // Nome da coluna no banco de dados
+    @Column(name = "t_localizacao_id_localizacao") // Nome da coluna no banco de dados
     private Long localizacaoId;     // ID da localização (FK)
     
     @Column(name = "t_usuarios_id_usuario") // Nome da coluna no banco de dados
