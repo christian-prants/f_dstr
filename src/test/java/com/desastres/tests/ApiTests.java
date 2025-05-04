@@ -100,7 +100,7 @@ public class ApiTests {
             + "\"data\": \"2025-05-04\","
             + "\"intensidade\": 4,"
             + "\"duracao\": 2,"
-            + "\"usuarioId\": {\"id\": %d}"
+            + "\"usuarioId\":  %d"
             + "}", userId);
 
         given()
