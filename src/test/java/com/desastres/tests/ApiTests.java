@@ -63,7 +63,7 @@ public class ApiTests {
         .when()
             .post("/localizacoes")
         .then()
-            .statusCode(200)
+            .statusCode(201)
             .body("id", notNullValue())
             .extract().response();
 
