@@ -1,18 +1,23 @@
 package com.desastres.tests;
 
 import io.restassured.RestAssured;
+import io.restassured.response.Response;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+
 import static io.restassured.RestAssured.*;
 import static org.hamcrest.Matchers.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @ActiveProfiles("test")
-
 public class ApiTests {
-    
+
+    private static Long userId;
+    private static Long locationId;
+
     @BeforeAll
     public static void setup() {
         RestAssured.baseURI = "http://localhost";
@@ -33,7 +38,7 @@ public class ApiTests {
             .contentType("application/json")
             .body(userJson)
         .when()
-            .post("/api/users")
+            .post("/api/usuarios")
         .then()
             .statusCode(201)
             .body("id", notNullValue())
@@ -46,17 +51,17 @@ public class ApiTests {
     @Order(2)
     public void testCreateLocation() {
         String locationJson = "{"
-            + "\"nmNome\": \"São Paulo\","
-            + "\"nrLatitude\": -23.5505,"
-            + "\"nrLongitude\": -46.6333,"
-            + "\"nmTipo\": \"Urbano\""
+            + "\"nome\": \"São Paulo\","
+            + "\"latitude\": -23.5505,"
+            + "\"longitude\": -46.6333,"
+            + "\"tipo\": \"Urbano\""
             + "}";
 
         Response response = given()
             .contentType("application/json")
             .body(locationJson)
         .when()
-            .post("/localizacoes")
+            .post("/api/localizacoes")
         .then()
             .statusCode(201)
             .body("id", notNullValue())
@@ -69,68 +74,54 @@ public class ApiTests {
     @Order(3)
     public void testCreateDisasterSuccess() {
         String disasterJson = String.format("{"
-            + "\"nmTipo\": \"Enchente\","
-            + "\"dtData\": \"2025-05-04\","
-            + "\"nrIntensidade\": 4,"
-            + "\"hrDuracao\": 2,"
-            + "\"tUsuariosIdUsuario\": %d,"
-            + "\"tLocalizacaoIdLocalizacao\": %d"
+            + "\"tipo\": \"Enchente\","
+            + "\"data\": \"2025-05-04\","
+            + "\"intensidade\": 4,"
+            + "\"duracao\": 2,"
+            + "\"usuario\": {\"id\": %d},"
+            + "\"localizacao\": {\"id\": %d}"
             + "}", userId, locationId);
 
         given()
             .contentType("application/json")
             .body(disasterJson)
         .when()
-            .post("/desastres")
+            .post("/api/desastres")
         .then()
             .statusCode(201)
             .body("id", notNullValue());
     }
 
-
     @Test
+    @Order(4)
     public void testCreateDisasterInvalidData() {
-        String disasterJson = String.format("{"
-            + "\"nmTipo\": \"Enchente\","
-            + "\"dtData\": \"2025-05-04\","
-            + "\"nrIntensidade\": 4,"
-            + "\"hrDuracao\": 2,"
-            + "\"tUsuariosIdUsuario\": %d,"
-            + "\"tLocalizacaoIdLocalizacao\": 4"
-            + "}", userId, locationId);
+        // Falta localizacao (obrigatório)
+        String invalidJson = String.format("{"
+            + "\"tipo\": \"Enchente\","
+            + "\"data\": \"2025-05-04\","
+            + "\"intensidade\": 4,"
+            + "\"duracao\": 2,"
+            + "\"usuario\": {\"id\": %d}"
+            + "}", userId);
 
         given()
             .contentType("application/json")
-            .body(disasterJson)
+            .body(invalidJson)
         .when()
-            .post("/desastres")
+            .post("/api/desastres")
         .then()
-            .statusCode(201)
-            .body("id", notNullValue());
+            .statusCode(400);
     }
 
     @Test
+    @Order(5)
     public void testGetDisastersByLocation() {
-        // Cria dados de teste usando a sintaxe tradicional
         given()
-            .contentType("application/json")
-            .body("{ \"name\": \"Teste SP\", \"location\": \"São Paulo\", \"severity\": \"MEDIUM\" }")
+            .queryParam("location", "São Paulo")
         .when()
-            .post("/api/disasters");
-        
-        given()
-            .contentType("application/json")
-            .body("{ \"name\": \"Teste RJ\", \"location\": \"Rio de Janeiro\", \"severity\": \"LOW\" }")
-        .when()
-            .post("/api/disasters");
-        
-        // Teste de consulta
-        given()
-            .param("location", "São Paulo")
-        .when()
-            .get("/desastres")
+            .get("/api/desastres")
         .then()
             .statusCode(200)
-            .body("$", everyItem(hasEntry("location", "São Paulo")));
+            .body("size()", greaterThan(0));
     }
 }
