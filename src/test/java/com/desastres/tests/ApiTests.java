@@ -118,7 +118,7 @@ public class ApiTests {
         given()
             .queryParam("location", "São Paulo")
         .when()
-            .get("/desastres/"+localizacaoId)
+            .get("/desastres/"+locationId)
         .then()
             .statusCode(200)
             .body("size()", greaterThan(0));
