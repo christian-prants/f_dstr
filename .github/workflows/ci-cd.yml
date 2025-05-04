@@ -7,8 +7,7 @@ on:
     branches: [ main ]
 
 env:
-  DOCKER_IMAGE: christianprants/desastres  # 👈 Altere para seu Docker Hub!
-  K8S_NAMESPACE: sua-namespace          # 👈 Namespace no Kubernetes
+  DOCKER_IMAGE: christianprants/desastres
 
 jobs:
   # --------------------------------------------
@@ -26,8 +25,23 @@ jobs:
         java-version: '11'
         distribution: 'temurin'
         
+    - name: Run unit tests
+      run: mvn -B test
+
     - name: Build with Maven
       run: mvn -B package --file pom.xml
+      
+    - name: Start application for integration tests
+      run: |
+        nohup java -jar target/*.jar &
+        echo "Waiting for app to start..."
+        sleep 30
+        
+    - name: Run integration tests
+      run: mvn -B verify -DskipUnitTests=true
+      
+    - name: Stop application
+      run: pkill -f 'java -jar'
       
     - name: Build Docker image
       run: docker build -t ${{ env.DOCKER_IMAGE }}:latest .
@@ -53,24 +67,22 @@ jobs:
     needs: build-and-test
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
-    
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Install kubectl
-      uses: azure/setup-kubectl@v3
-    
-    - name: Configure Kubernetes Context
-      run: |
-        echo "${{ secrets.K8S_CONFIG_STAGING }}" > kubeconfig.yaml
-        export KUBECONFIG=./kubeconfig.yaml
-        
-    - name: Deploy to Staging
-      run: |
-        kubectl config set-context --current --namespace=${{ env.K8S_NAMESPACE }}
-        kubectl apply -f k8s/staging-deployment.yaml
-        kubectl apply -f k8s/staging-service.yaml
-        kubectl rollout status deployment/app-deployment -n ${{ env.K8S_NAMESPACE }}
+      - uses: actions/checkout@v4
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Configure Kubernetes (Staging)
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBE_CONFIG_STAGING }}" > ~/.kube/config
+          kubectl config use-context kind-staging
+
+      - name: Deploy to Staging
+        run: |
+          kubectl apply -f k8s/staging-deployment.yaml
+          kubectl apply -f k8s/staging-service.yaml
 
   # --------------------------------------------
   # ESTÁGIO 3: Deploy para Production (Com Aprovação)
@@ -79,28 +91,26 @@ jobs:
     needs: deploy-staging
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
-    
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Install kubectl
-      uses: azure/setup-kubectl@v3
-    
-    - name: Manual Approval
-      uses: trstringer/manual-approval@v1
-      with:
-        secret: ${{ github.token }}
-        approvers: "christian-prants"  # 👈 Quem pode aprovar
-        minimum-approvals: 1
-    
-    - name: Configure Kubernetes Context
-      run: |
-        echo "${{ secrets.K8S_CONFIG_PROD }}" > kubeconfig.yaml
-        export KUBECONFIG=./kubeconfig.yaml
-        
-    - name: Deploy to Production
-      run: |
-        kubectl config set-context --current --namespace=${{ env.K8S_NAMESPACE }}
-        kubectl apply -f k8s/production-deployment.yaml
-        kubectl apply -f k8s/production-service.yaml
-        kubectl rollout status deployment/app-deployment -n ${{ env.K8S_NAMESPACE }}
+      - uses: actions/checkout@v4
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Approve Production Deployment
+        uses: trstringer/manual-approval@v1
+        with:
+          secret: ${{ github.token }}
+          approvers: "christian-prants"
+          minimum-approvals: 1
+
+      - name: Configure Kubernetes (Production)
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBE_CONFIG_PRODUCTION }}" > ~/.kube/config
+          kubectl config use-context kind-production
+
+      - name: Deploy to Production
+        run: |
+          kubectl apply -f k8s/production-deployment.yaml
+          kubectl apply -f k8s/production-service.yaml
