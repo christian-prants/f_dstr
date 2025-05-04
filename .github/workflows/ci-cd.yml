@@ -25,8 +25,23 @@ jobs:
         java-version: '11'
         distribution: 'temurin'
         
+    - name: Run unit tests
+      run: mvn -B test
+      
     - name: Build with Maven
       run: mvn -B package --file pom.xml
+      
+    - name: Start application for integration tests
+      run: |
+        nohup java -jar target/*.jar &
+        echo "Waiting for app to start..."
+        sleep 30
+        
+    - name: Run integration tests
+      run: mvn -B verify -DskipUnitTests=true
+      
+    - name: Stop application
+      run: pkill -f 'java -jar'
       
     - name: Build Docker image
       run: docker build -t ${{ env.DOCKER_IMAGE }}:latest .
