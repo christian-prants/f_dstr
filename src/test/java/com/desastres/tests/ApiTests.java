@@ -38,7 +38,7 @@ public class ApiTests {
             .contentType("application/json")
             .body(userJson)
         .when()
-            .post("/api/usuarios")
+            .post("/api/users")
         .then()
             .statusCode(201)
             .body("id", notNullValue())
@@ -61,7 +61,7 @@ public class ApiTests {
             .contentType("application/json")
             .body(locationJson)
         .when()
-            .post("/api/localizacoes")
+            .post("/localizacoes")
         .then()
             .statusCode(201)
             .body("id", notNullValue())
@@ -86,7 +86,7 @@ public class ApiTests {
             .contentType("application/json")
             .body(disasterJson)
         .when()
-            .post("/api/desastres")
+            .post("/desastres")
         .then()
             .statusCode(201)
             .body("id", notNullValue());
@@ -107,7 +107,7 @@ public class ApiTests {
             .contentType("application/json")
             .body(invalidJson)
         .when()
-            .post("/api/desastres")
+            .post("/desastres")
         .then()
             .statusCode(400);
     }
@@ -118,7 +118,7 @@ public class ApiTests {
         given()
             .queryParam("location", "São Paulo")
         .when()
-            .get("/api/desastres")
+            .get("/desastres/"+localizacaoId)
         .then()
             .statusCode(200)
             .body("size()", greaterThan(0));
