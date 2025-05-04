@@ -4,6 +4,7 @@ import io.cucumber.java.pt.Dado;
 import io.cucumber.java.pt.Quando;
 import io.cucumber.java.pt.Então;
 import io.restassured.response.Response;
+import static org.hamcrest.Matchers.notNullValue;
 import static io.restassured.RestAssured.*;
 
 public class DisasterSteps {

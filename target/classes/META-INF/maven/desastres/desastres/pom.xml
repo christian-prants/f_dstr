@@ -5,87 +5,154 @@
   <version>0.0.1-SNAPSHOT</version>
   <name>desastres</name>
   <description>desastres de desastres</description>
+  
+  <!-- Adicione estas propriedades -->
   <properties>
-      <spring.boot.version>2.6.4</spring.boot.version> <!-- Defina a versão desejada do Spring Boot -->
+      <java.version>11</java.version>
+      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+      <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+      <spring.boot.version>2.6.4</spring.boot.version>
+      <maven.compiler.source>${java.version}</maven.compiler.source>
+      <maven.compiler.target>${java.version}</maven.compiler.target>
   </properties>
 
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>2.6.4</version>
+    <relativePath/> 
+  </parent>
+
   <dependencies>
-	  <dependency>
-	    <groupId>org.apache.tomcat</groupId>
-	    <artifactId>tomcat-jdbc</artifactId>
-	    <version>9.0.71</version> <!-- Use a versão que você está utilizando -->
-	</dependency>
-	<dependency>
-	    <groupId>com.fasterxml.jackson.core</groupId>
-	    <artifactId>jackson-databind</artifactId>
-	    <version>2.13.0</version> <!-- Use a versão mais recente que você está usando -->
-	</dependency>
-	<dependency>
-	    <groupId>com.fasterxml.jackson.datatype</groupId>
-	    <artifactId>jackson-datatype-jsr310</artifactId>
-	    <version>2.13.0</version> <!-- Use a versão correspondente -->
-	</dependency>
+    <!-- Dependências do Spring Boot -->
     <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-web</artifactId>
-        <version>${spring.boot.version}</version>
     </dependency>
     <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-data-jpa</artifactId>
-        <version>${spring.boot.version}</version>
     </dependency>
     <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-security</artifactId>
-        <version>${spring.boot.version}</version>
-    </dependency>
-    <dependency>
-        <groupId>org.flywaydb</groupId>
-        <artifactId>flyway-core</artifactId>
-        <version>8.0.0</version>
-    </dependency>
-    <dependency>
-        <groupId>com.oracle.database.jdbc</groupId>
-        <artifactId>ojdbc8</artifactId>
-        <version>19.8.0.0</version>
     </dependency>
     <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-validation</artifactId>
-        <version>${spring.boot.version}</version>
     </dependency>
     <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-test</artifactId>
         <scope>test</scope>
-        <version>${spring.boot.version}</version>
+    </dependency>
+    
+    <!-- Outras dependências -->
+    <dependency>
+      <groupId>org.apache.tomcat</groupId>
+      <artifactId>tomcat-jdbc</artifactId>
     </dependency>
     <dependency>
-	    <groupId>jakarta.xml.bind</groupId>
-	    <artifactId>jakarta.xml.bind-api</artifactId>
-	    <version>2.3.3</version> <!-- ou a versão mais recente -->
-	</dependency>
-	<dependency>
-	    <groupId>org.glassfish.jaxb</groupId>
-	    <artifactId>jaxb-runtime</artifactId>
-	    <version>2.3.3</version> <!-- ou a versão mais recente -->
-	</dependency>
-	<dependency>
-	    <groupId>io.jsonwebtoken</groupId>
-	    <artifactId>jjwt</artifactId>
-	    <version>0.9.1</version>
-	</dependency>
-
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-jsr310</artifactId>
+      </dependency>
+    <dependency>
+      <groupId>org.flywaydb</groupId>
+      <artifactId>flyway-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.oracle.database.jdbc</groupId>
+      <artifactId>ojdbc8</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>jakarta.xml.bind</groupId>
+      <artifactId>jakarta.xml.bind-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.jaxb</groupId>
+      <artifactId>jaxb-runtime</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.jsonwebtoken</groupId>
+      <artifactId>jjwt</artifactId>
+      <version>0.9.1</version>
+    </dependency>
+    <dependency>
+        <groupId>io.rest-assured</groupId>
+        <artifactId>rest-assured</artifactId>
+        <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>io.cucumber</groupId>
+        <artifactId>cucumber-java</artifactId>
+        <version>7.11.1</version>
+        <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>io.cucumber</groupId>
+        <artifactId>cucumber-junit</artifactId>
+        <version>7.11.1</version>
+        <scope>test</scope>
+    </dependency>
+    <dependency>
+    	<groupId>io.rest-assured</groupId>
+    	<artifactId>json-schema-validator</artifactId>
+    <scope>test</scope>
+</dependency>
   </dependencies>
 
   <build>
-      <plugins>
-          <plugin>
-              <groupId>org.springframework.boot</groupId>
-              <artifactId>spring-boot-maven-plugin</artifactId>
-              <version>${spring.boot.version}</version>
-          </plugin>
-      </plugins>
+    <plugins>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+      </plugin>
+      
+      <!-- Adicione o plugin do compilador -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>${java.version}</source>
+          <target>${java.version}</target>
+          <encoding>${project.build.sourceEncoding}</encoding>
+        </configuration>
+      </plugin>
+
+      <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>3.0.0-M7</version>
+            <configuration>
+                <includes>
+                    <include>**/*Test.java</include> <!-- Executa apenas testes JUnit normais -->
+                </includes>
+            </configuration>
+        </plugin>
+        
+        <!-- Plugin para testes de integração (Failsafe) -->
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <version>3.0.0-M7</version>
+            <executions>
+                <execution>
+                    <goals>
+                        <goal>integration-test</goal>
+                        <goal>verify</goal>
+                    </goals>
+                    <configuration>
+                        <includes>
+                            <include>**/*CucumberTest.java</include>
+                        </includes>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
+    </plugins>
   </build>
 </project>
