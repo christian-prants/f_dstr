@@ -78,8 +78,8 @@ public class ApiTests {
             + "\"data\": \"2025-05-04\","
             + "\"intensidade\": 4,"
             + "\"duracao\": 2,"
-            + "\"usuarioId\": {\"id\": %d},"
-            + "\"localizacaoId\": {\"id\": %d}"
+            + "\"usuarioId\": %d,"
+            + "\"localizacaoId\": %d"
             + "}", userId, locationId);
 
         given()
