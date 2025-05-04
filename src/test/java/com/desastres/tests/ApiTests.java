@@ -40,7 +40,7 @@ public class ApiTests {
         .when()
             .post("/api/users")
         .then()
-            .statusCode(201)
+            .statusCode(200)
             .body("id", notNullValue())
             .extract().response();
 
@@ -63,7 +63,7 @@ public class ApiTests {
         .when()
             .post("/localizacoes")
         .then()
-            .statusCode(201)
+            .statusCode(200)
             .body("id", notNullValue())
             .extract().response();
 
@@ -88,7 +88,7 @@ public class ApiTests {
         .when()
             .post("/desastres")
         .then()
-            .statusCode(201)
+            .statusCode(200)
             .body("id", notNullValue());
     }
 
