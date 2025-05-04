@@ -36,12 +36,26 @@ jobs:
         nohup java -jar target/*.jar &
         echo "Waiting for app to start..."
         sleep 30
-        
+
     - name: Run integration tests
       run: mvn -B verify -DskipUnitTests=true
       
     - name: Stop application
       run: pkill -f 'java -jar'
+
+    - name: Run BDD Tests
+      run: mvn test -Dtest=CucumberIT
+
+    - name: Run API Tests
+      run: mvn test -Dtest=ApiTests
+
+    - name: Upload Reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-reports
+        path: |
+          target/cucumber-reports.html
+          target/surefire-reports
       
     - name: Build Docker image
       run: docker build -t ${{ env.DOCKER_IMAGE }}:latest .
