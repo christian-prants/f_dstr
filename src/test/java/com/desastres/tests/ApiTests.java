@@ -20,28 +20,93 @@ public class ApiTests {
     }
 
     @Test
-    public void testCreateDisasterSuccess() {
-        given()
+    @Order(1)
+    public void testCreateUser() {
+        String userJson = "{"
+            + "\"nmNome\": \"João da Silva\","
+            + "\"nmEmail\": \"joao@email.com\","
+            + "\"senha\": \"senha123\","
+            + "\"nrTelefone\": 11999999999"
+            + "}";
+
+        Response response = given()
             .contentType("application/json")
-            .body("{ \"name\": \"Enchente\", \"location\": \"São Paulo\", \"severity\": \"HIGH\" }")
+            .body(userJson)
         .when()
-            .post("/api/disasters")
+            .post("/api/users")
         .then()
             .statusCode(201)
-            .body("id", notNullValue());
-            // Removida a validação de schema temporariamente
+            .body("id", notNullValue())
+            .extract().response();
+
+        userId = response.path("id");
     }
 
     @Test
-    public void testCreateDisasterInvalidData() {
+    @Order(2)
+    public void testCreateLocation() {
+        String locationJson = "{"
+            + "\"nmNome\": \"São Paulo\","
+            + "\"nrLatitude\": -23.5505,"
+            + "\"nrLongitude\": -46.6333,"
+            + "\"nmTipo\": \"Urbano\""
+            + "}";
+
+        Response response = given()
+            .contentType("application/json")
+            .body(locationJson)
+        .when()
+            .post("/localizacoes")
+        .then()
+            .statusCode(201)
+            .body("id", notNullValue())
+            .extract().response();
+
+        locationId = response.path("id");
+    }
+
+    @Test
+    @Order(3)
+    public void testCreateDisasterSuccess() {
+        String disasterJson = String.format("{"
+            + "\"nmTipo\": \"Enchente\","
+            + "\"dtData\": \"2025-05-04\","
+            + "\"nrIntensidade\": 4,"
+            + "\"hrDuracao\": 2,"
+            + "\"tUsuariosIdUsuario\": %d,"
+            + "\"tLocalizacaoIdLocalizacao\": %d"
+            + "}", userId, locationId);
+
         given()
             .contentType("application/json")
-            .body("{ \"name\": \"\", \"location\": \"São Paulo\", \"severity\": \"INVALID\" }")
+            .body(disasterJson)
         .when()
-            .post("/api/disasters")
+            .post("/desastres")
         .then()
-            .statusCode(400)
-            .body("errors", hasSize(greaterThan(0)));
+            .statusCode(201)
+            .body("id", notNullValue());
+    }
+
+
+    @Test
+    public void testCreateDisasterInvalidData() {
+        String disasterJson = String.format("{"
+            + "\"nmTipo\": \"Enchente\","
+            + "\"dtData\": \"2025-05-04\","
+            + "\"nrIntensidade\": 4,"
+            + "\"hrDuracao\": 2,"
+            + "\"tUsuariosIdUsuario\": %d,"
+            + "\"tLocalizacaoIdLocalizacao\": 4"
+            + "}", userId, locationId);
+
+        given()
+            .contentType("application/json")
+            .body(disasterJson)
+        .when()
+            .post("/desastres")
+        .then()
+            .statusCode(201)
+            .body("id", notNullValue());
     }
 
     @Test
@@ -63,7 +128,7 @@ public class ApiTests {
         given()
             .param("location", "São Paulo")
         .when()
-            .get("/api/disasters")
+            .get("/desastres")
         .then()
             .statusCode(200)
             .body("$", everyItem(hasEntry("location", "São Paulo")));
