@@ -28,10 +28,10 @@ public class ApiTests {
     @Order(1)
     public void testCreateUser() {
         String userJson = "{"
-            + "\"nmNome\": \"João da Silva\","
-            + "\"nmEmail\": \"joao@email.com\","
+            + "\"nome\": \"João da Silva\","
+            + "\"email\": \"joao@email.com\","
             + "\"senha\": \"senha123\","
-            + "\"nrTelefone\": 11999999999"
+            + "\"telefone\": 11999999999"
             + "}";
 
         Response response = given()
@@ -78,8 +78,8 @@ public class ApiTests {
             + "\"data\": \"2025-05-04\","
             + "\"intensidade\": 4,"
             + "\"duracao\": 2,"
-            + "\"usuario\": {\"id\": %d},"
-            + "\"localizacao\": {\"id\": %d}"
+            + "\"usuarioId\": {\"id\": %d},"
+            + "\"localizacaoId\": {\"id\": %d}"
             + "}", userId, locationId);
 
         given()
@@ -95,13 +95,12 @@ public class ApiTests {
     @Test
     @Order(4)
     public void testCreateDisasterInvalidData() {
-        // Falta localizacao (obrigatório)
         String invalidJson = String.format("{"
             + "\"tipo\": \"Enchente\","
             + "\"data\": \"2025-05-04\","
             + "\"intensidade\": 4,"
             + "\"duracao\": 2,"
-            + "\"usuario\": {\"id\": %d}"
+            + "\"usuarioId\": {\"id\": %d}"
             + "}", userId);
 
         given()
