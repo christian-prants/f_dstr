@@ -2,9 +2,8 @@ package com.desastres.tests;
 
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
+
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -13,6 +12,7 @@ import static org.hamcrest.Matchers.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @ActiveProfiles("test")
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ApiTests {
 
     private static Integer userId;
@@ -47,7 +47,7 @@ public class ApiTests {
         System.out.println("Resposta formatada:");
         response.prettyPrint();
 
-        userId = 1; //Long.valueOf(response.path("id").toString());
+        userId = response.path("id");
     }
 
     @Test
@@ -69,28 +69,27 @@ public class ApiTests {
             .statusCode(201)
             .body("id", notNullValue())
             .extract().response();
-        
+
         System.out.println("Resposta formatada:");
         response.prettyPrint();
-        
-        locationId = 1; //Long.valueOf(response.path("id").toString());
+
+        locationId = response.path("id");
     }
 
     @Test
     @Order(3)
     public void testCreateDisasterSuccess() {
-        System.out.println("userId = " + userId);        
-        System.out.println("locationId = " + locationId); 
-        
+        System.out.println("userId = " + userId);
+        System.out.println("locationId = " + locationId);
+
         String disasterJson = String.format("{"
             + "\"tipo\": \"Enchente\","
             + "\"data\": \"2025-05-04\","
             + "\"intensidade\": 4,"
             + "\"duracao\": 2,"
-            + "\"usuarioId\": 1,"
-            + "\"localizacaoId\": 1"
-            + "}");
-
+            + "\"usuarioId\": %d,"
+            + "\"localizacaoId\": %d"
+            + "}", userId, locationId);
 
         given()
             .contentType("application/json")
@@ -110,8 +109,8 @@ public class ApiTests {
             + "\"data\": \"2025-05-04\","
             + "\"intensidade\": 4,"
             + "\"duracao\": 2,"
-            + "\"usuarioId\": 1"
-            + "}");
+            + "\"usuarioId\": %d"
+            + "}", userId);
 
         given()
             .contentType("application/json")
@@ -128,7 +127,7 @@ public class ApiTests {
         given()
             .queryParam("location", "São Paulo")
         .when()
-            .get("/desastres/"+locationId)
+            .get("/desastres/" + locationId)
         .then()
             .statusCode(200)
             .body("size()", greaterThan(0));
