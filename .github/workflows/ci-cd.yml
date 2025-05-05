@@ -37,14 +37,11 @@ jobs:
         echo "Waiting for app to start..."
         sleep 30
 
-    - name: Run integration tests
+    - name: Run integration tests & BDD Tests
       run: mvn -B verify -DskipUnitTests=true
       
     - name: Stop application
       run: pkill -f 'java -jar'
-
-    - name: Run BDD Tests
-      run: mvn test -Dtest=CucumberIT
 
     - name: Run API Tests
       run: mvn test -Dtest=ApiTests
