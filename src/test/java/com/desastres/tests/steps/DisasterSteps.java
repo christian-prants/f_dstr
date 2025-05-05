@@ -1,10 +1,12 @@
 package com.desastres.tests.steps;
 
+import io.cucumber.datatable.DataTable;
 import io.cucumber.java.pt.*;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 
+import java.util.List;
 import java.util.Map;
 
 import static org.hamcrest.Matchers.*;
@@ -25,7 +27,8 @@ public class DisasterSteps {
     }
 
     @Dado("um novo usuário com:")
-    public void criarUsuario(Map<String, String> dados) {
+    public void criarUsuario(DataTable dataTable) {
+        Map<String, String> dados = dataTable.asMaps().get(0); // usa a primeira linha da tabela
         String userJson = String.format(
             "{\"nome\":\"%s\",\"email\":\"%s\",\"senha\":\"%s\",\"telefone\":%s}",
             dados.get("nome"), dados.get("email"), dados.get("senha"), dados.get("telefone"));
@@ -35,7 +38,8 @@ public class DisasterSteps {
     }
 
     @Dado("uma nova localização com:")
-    public void criarLocalizacao(Map<String, String> dados) {
+    public void criarLocalizacao(DataTable dataTable) {
+        Map<String, String> dados = dataTable.asMaps().get(0); // usa a primeira linha da tabela
         String locationJson = String.format(
             "{\"nome\":\"%s\",\"latitude\":%s,\"longitude\":%s,\"tipo\":\"%s\"}",
             dados.get("nome"), dados.get("latitude"), dados.get("longitude"), dados.get("tipo"));
