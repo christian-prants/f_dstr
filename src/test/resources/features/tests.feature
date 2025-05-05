@@ -1,3 +1,4 @@
+# Language: pt
 Funcionalidade: API de Gerenciamento de Desastres
   Como administrador do sistema
   Eu quero gerenciar usuários, localizações e desastres
