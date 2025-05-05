@@ -1,39 +1,59 @@
 # features/tests.feature
 
-Funcionalidade: Gerenciamento de Desastres
+Funcionalidade: API de Gerenciamento de Desastres
   Como administrador do sistema
-  Eu quero gerenciar registros de desastres
-  Para manter informações atualizadas
+  Eu quero gerenciar usuários, localizações e desastres
+  Para manter registros precisos de eventos catastróficos
 
-  Cenário: Cadastro bem-sucedido de desastre
-    Dado que estou autenticado como administrador
-    Quando envio uma requisição POST para "/api/disasters" com:
+  Cenário: Criação de usuário com sucesso
+    Dado que eu tenho um novo usuário com os seguintes dados:
+      | nome          | email          | senha    | telefone     |
+      | João da Silva | joao@email.com | senha123 | 11999999999  |
+    Quando eu envio uma requisição POST para "/api/users" com esses dados
+    Então o status da resposta deve ser 200
+    E a resposta deve conter um ID de usuário
+
+  Cenário: Criação de localização com sucesso
+    Dado que eu tenho uma nova localização com os seguintes dados:
+      | nome      | latitude | longitude | tipo    |
+      | São Paulo | -23.5505 | -46.6333  | Urbano  |
+    Quando eu envio uma requisição POST para "/localizacoes" com esses dados
+    Então o status da resposta deve ser 201
+    E a resposta deve conter um ID de localização
+
+  Cenário: Criação de registro de desastre com sucesso
+    Dado que existe um usuário cadastrado
+    E existe uma localização cadastrada
+    Quando eu envio uma requisição POST para "/desastres" com:
       """
       {
-        "name": "Enchente",
-        "location": "São Paulo",
-        "severity": "HIGH"
+        "tipo": "Enchente",
+        "data": "2025-05-04",
+        "intensidade": 4,
+        "duracao": 2,
+        "usuarioId": <userId>,
+        "localizacaoId": <locationId>
       }
       """
-    Então a resposta deve ter status 201
-    E o corpo da resposta deve conter um ID
-    E o banco de dados deve conter o novo registro
+    Então o status da resposta deve ser 201
+    E a resposta deve conter um ID de desastre
 
-  Cenário: Tentativa de cadastro com dados inválidos
-    Dado que estou autenticado como administrador
-    Quando envio uma requisição POST para "/api/disasters" com:
+  Cenário: Tentativa de criação de desastre com dados inválidos
+    Dado que existe um usuário cadastrado
+    Quando eu envio uma requisição POST para "/desastres" com dados incompletos:
       """
       {
-        "name": "",
-        "location": "São Paulo",
-        "severity": "INVALID"
+        "tipo": "Enchente",
+        "data": "2025-05-04",
+        "intensidade": 4,
+        "duracao": 2,
+        "usuarioId": <userId>
       }
       """
-    Então a resposta deve ter status 400
-    E o corpo da resposta deve conter mensagens de erro
+    Então o status da resposta deve ser 500
 
   Cenário: Consulta de desastres por localização
-    Dado que existem desastres cadastrados em "São Paulo" e "Rio de Janeiro"
-    Quando envio uma requisição GET para "/api/disasters?location=São Paulo"
-    Então a resposta deve ter status 200
-    E deve retornar apenas desastres de "São Paulo"
+    Dado que existem desastres registrados para "São Paulo"
+    Quando eu envio uma requisição GET para "/desastres/<locationId>"
+    Então o status da resposta deve ser 200
+    E a resposta deve conter uma lista não vazia de desastres
