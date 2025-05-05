@@ -12,6 +12,7 @@ import java.util.Map;
 
 import static org.hamcrest.Matchers.*;
 
+@CucumberContextConfiguration
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @ActiveProfiles("test")
 public class DisasterSteps {
