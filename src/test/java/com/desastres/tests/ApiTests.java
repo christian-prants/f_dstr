@@ -15,8 +15,8 @@ import static org.hamcrest.Matchers.*;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ApiTests {
 
-    private static Integer userId;
-    private static Integer locationId;
+    private static Long userId;
+    private static Long locationId;
 
     @BeforeAll
     public static void setup() {
