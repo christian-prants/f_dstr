@@ -29,9 +29,11 @@ public class DisasterSteps {
     public void criarUsuario(DataTable dataTable) {
         Map<String, String> dados = dataTable.asMaps().get(0);
 
+        String email = dados.get("email").replace("@", "+" + System.currentTimeMillis() + "@");
+
         String userJson = String.format(
-            "{\"nome\":\"%s\",\"email\":\"%s\",\"senha\":\"%s\",\"telefone\":%s}",
-            dados.get("nome"), dados.get("email"), dados.get("senha"), dados.get("telefone"));
+            "{\"nome\":\"%s\",\"email\":\"%s\",\"senha\":\"%s\",\"telefone\":\"%s\"}",
+            dados.get("nome"), email, dados.get("senha"), dados.get("telefone"));
 
         response = request.body(userJson).post("/api/users");
 
@@ -59,7 +61,7 @@ public class DisasterSteps {
 
         response = request.body(locationJson).post("/localizacoes");
 
-        if (response.getStatusCode() >= 400) {
+        if (response.getStatusCode() != 200 && response.getStatusCode() != 201) {
             throw new RuntimeException("Erro ao criar localização: " + response.getStatusCode() + " - " + response.getBody().asString());
         }
 
@@ -83,8 +85,8 @@ public class DisasterSteps {
         }
 
         String formattedBody = body
-            .replace("<userId>", userId != null ? userId.toString() : "")
-            .replace("<locationId>", locationId != null ? locationId.toString() : "");
+            .replace("<userId>", userId.toString())
+            .replace("<locationId>", locationId.toString());
 
         response = request.body(formattedBody).post("/desastres");
 
