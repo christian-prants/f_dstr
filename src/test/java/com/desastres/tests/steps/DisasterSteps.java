@@ -1,55 +1,74 @@
-package com.desastres.tests;
+package com.desastres.tests.steps;
 
 import io.cucumber.java.pt.*;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
+import io.restassured.specification.RequestSpecification;
+
+import java.util.Map;
+
 import static org.hamcrest.Matchers.*;
 
-public class ApiStepDefinitions {
+public class DisasterSteps {
 
+    private Response response;
+    private RequestSpecification request;
     private static Long userId;
     private static Long locationId;
-    private Response response;
+    private String requestBody;
 
-    @Dado("que eu tenho um novo usuário com os seguintes dados:")
+    @Dado("que o sistema está configurado")
+    public void setup() {
+        RestAssured.baseURI = "http://localhost";
+        RestAssured.port = 8080;
+        request = RestAssured.given().contentType("application/json");
+    }
+
+    @Dado("um novo usuário com:")
     public void criarUsuario(Map<String, String> dados) {
-        String userJson = String.format("{\"nome\":\"%s\",\"email\":\"%s\",\"senha\":\"%s\",\"telefone\":%s}",
-                dados.get("nome"), dados.get("email"), dados.get("senha"), dados.get("telefone"));
+        String userJson = String.format(
+            "{\"nome\":\"%s\",\"email\":\"%s\",\"senha\":\"%s\",\"telefone\":%s}",
+            dados.get("nome"), dados.get("email"), dados.get("senha"), dados.get("telefone"));
         
-        response = RestAssured.given()
-            .contentType("application/json")
-            .body(userJson)
-            .post("/api/users");
-        
-        userId = response.then().extract().path("id");
+        response = request.body(userJson).post("/api/users");
+        userId = response.jsonPath().getLong("id");
     }
 
-    @Dado("que eu tenho uma nova localização com os seguintes dados:")
+    @Dado("uma nova localização com:")
     public void criarLocalizacao(Map<String, String> dados) {
-        String locationJson = String.format("{\"nome\":\"%s\",\"latitude\":%s,\"longitude\":%s,\"tipo\":\"%s\"}",
-                dados.get("nome"), dados.get("latitude"), dados.get("longitude"), dados.get("tipo"));
+        String locationJson = String.format(
+            "{\"nome\":\"%s\",\"latitude\":%s,\"longitude\":%s,\"tipo\":\"%s\"}",
+            dados.get("nome"), dados.get("latitude"), dados.get("longitude"), dados.get("tipo"));
         
-        response = RestAssured.given()
-            .contentType("application/json")
-            .body(locationJson)
-            .post("/localizacoes");
-        
-        locationId = response.then().extract().path("id");
+        response = request.body(locationJson).post("/localizacoes");
+        locationId = response.jsonPath().getLong("id");
     }
 
-    @Quando("eu envio uma requisição POST para {string} com esses dados")
-    public void enviarPost(String endpoint) {
-        // Implementação já feita nos métodos acima
+    @Quando("submeto um novo desastre com:")
+    public void criarDesastre(String body) {
+        String formattedBody = body
+            .replace("<userId>", userId.toString())
+            .replace("<locationId>", locationId.toString());
+        response = request.body(formattedBody).post("/desastres");
     }
 
-    @Entao("o status da resposta deve ser {int}")
+    @Quando("busco desastres por localização")
+    public void buscarDesastresPorLocalizacao() {
+        response = request.get("/desastres/" + locationId);
+    }
+
+    @Entao("o sistema retorna status {int}")
     public void verificarStatus(int status) {
         response.then().statusCode(status);
     }
 
-    @Entao("a resposta deve conter um ID de usuário")
-    public void verificarIdUsuario() {
+    @Entao("contém um ID válido")
+    public void verificarIdValido() {
         response.then().body("id", notNullValue());
     }
 
+    @Entao("lista de desastres não está vazia")
+    public void verificarListaNaoVazia() {
+        response.then().body("size()", greaterThan(0));
+    }
 }
