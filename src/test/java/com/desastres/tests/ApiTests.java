@@ -5,8 +5,6 @@ import io.restassured.response.Response;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
-import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -15,7 +13,6 @@ import static org.hamcrest.Matchers.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @ActiveProfiles("test")
-@TestMethodOrder(OrderAnnotation.class)
 public class ApiTests {
 
     private static Long userId;
@@ -25,8 +22,11 @@ public class ApiTests {
     public static void setup() {
         RestAssured.baseURI = "http://localhost";
         RestAssured.port = 8080;
+    }
 
-        // Criar usuário
+    @Test
+    @Order(1)
+    public void testCreateUser() {
         String userJson = "{"
             + "\"nome\": \"João da Silva\","
             + "\"email\": \"joao@email.com\","
@@ -34,7 +34,7 @@ public class ApiTests {
             + "\"telefone\": 11999999999"
             + "}";
 
-        Response userResponse = given()
+        Response response = given()
             .contentType("application/json")
             .body(userJson)
         .when()
@@ -44,9 +44,12 @@ public class ApiTests {
             .body("id_usuario", notNullValue())
             .extract().response();
 
-        userId = userResponse.path("id_usuario");
+        userId = response.path("id_usuario");
+    }
 
-        // Criar localização
+    @Test
+    @Order(2)
+    public void testCreateLocation() {
         String locationJson = "{"
             + "\"nome\": \"São Paulo\","
             + "\"latitude\": -23.5505,"
@@ -54,7 +57,7 @@ public class ApiTests {
             + "\"tipo\": \"Urbano\""
             + "}";
 
-        Response locationResponse = given()
+        Response response = given()
             .contentType("application/json")
             .body(locationJson)
         .when()
@@ -64,11 +67,11 @@ public class ApiTests {
             .body("id_localizacao", notNullValue())
             .extract().response();
 
-        locationId = locationResponse.path("id_localizacao");
+        locationId = response.path("id_localizacao");
     }
 
     @Test
-    @Order(1)
+    @Order(3)
     public void testCreateDisasterSuccess() {
         System.out.println("userId = " + userId);        
         System.out.println("locationId = " + locationId); 
@@ -78,9 +81,10 @@ public class ApiTests {
             + "\"data\": \"2025-05-04\","
             + "\"intensidade\": 4,"
             + "\"duracao\": 2,"
-            + "\"usuarioId\": %d,"
-            + "\"localizacaoId\": %d"
-            + "}", userId, locationId);
+            + "\"usuarioId\": 1,"
+            + "\"localizacaoId\": 1"
+            + "}");
+
 
         given()
             .contentType("application/json")
@@ -93,15 +97,15 @@ public class ApiTests {
     }
 
     @Test
-    @Order(2)
+    @Order(4)
     public void testCreateDisasterInvalidData() {
         String invalidJson = String.format("{"
             + "\"tipo\": \"Enchente\","
             + "\"data\": \"2025-05-04\","
             + "\"intensidade\": 4,"
             + "\"duracao\": 2,"
-            + "\"usuarioId\":  %d"
-            + "}", userId);
+            + "\"usuarioId\":  1"
+            + "}");
 
         given()
             .contentType("application/json")
@@ -113,12 +117,12 @@ public class ApiTests {
     }
 
     @Test
-    @Order(3)
+    @Order(5)
     public void testGetDisastersByLocation() {
         given()
             .queryParam("location", "São Paulo")
         .when()
-            .get("/desastres/" + locationId)
+            .get("/desastres/"+locationId)
         .then()
             .statusCode(200)
             .body("size()", greaterThan(0));
