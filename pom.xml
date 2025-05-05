@@ -152,20 +152,21 @@
               <version>2.22.2</version>
             </dependency>
           </dependencies>
+          <configuration>
+            <includes>
+              <include>**/*CucumberIT.java</include>
+            </includes>
+          </configuration>
           <executions>
             <execution>
               <goals>
                 <goal>integration-test</goal>
                 <goal>verify</goal>
               </goals>
-              <configuration>
-                <includes>
-                  <include>**/*CucumberIT.java</include>
-                </includes>
-              </configuration>
             </execution>
           </executions>
         </plugin>
+
 
 
     </plugins>
