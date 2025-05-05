@@ -82,6 +82,7 @@ public class ApiTests {
             + "\"localizacaoId\": %d"
             + "}", userId, locationId);
 
+
         given()
             .contentType("application/json")
             .body(disasterJson)
