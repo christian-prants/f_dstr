@@ -1,30 +1,33 @@
-# features/tests.feature
-
 Funcionalidade: API de Gerenciamento de Desastres
   Como administrador do sistema
   Eu quero gerenciar usuários, localizações e desastres
   Para manter registros precisos de eventos catastróficos
 
   Cenário: Criação de usuário com sucesso
-    Dado que eu tenho um novo usuário com os seguintes dados:
+    Dado que o sistema está configurado
+    E um novo usuário com:
       | nome          | email          | senha    | telefone     |
       | João da Silva | joao@email.com | senha123 | 11999999999  |
-    Quando eu envio uma requisição POST para "/api/users" com esses dados
-    Então o status da resposta deve ser 200
-    E a resposta deve conter um ID de usuário
+    Então o sistema retorna status 200
+    E contém um ID válido
 
   Cenário: Criação de localização com sucesso
-    Dado que eu tenho uma nova localização com os seguintes dados:
+    Dado que o sistema está configurado
+    E uma nova localização com:
       | nome      | latitude | longitude | tipo    |
       | São Paulo | -23.5505 | -46.6333  | Urbano  |
-    Quando eu envio uma requisição POST para "/localizacoes" com esses dados
-    Então o status da resposta deve ser 201
-    E a resposta deve conter um ID de localização
+    Então o sistema retorna status 201
+    E contém um ID válido
 
   Cenário: Criação de registro de desastre com sucesso
-    Dado que existe um usuário cadastrado
-    E existe uma localização cadastrada
-    Quando eu envio uma requisição POST para "/desastres" com:
+    Dado que o sistema está configurado
+    E um novo usuário com:
+      | nome          | email             | senha    | telefone    |
+      | Maria Santos  | maria@email.com   | senha456 | 11988888888 |
+    E uma nova localização com:
+      | nome      | latitude | longitude | tipo    |
+      | São Paulo | -23.5505 | -46.6333  | Urbano  |
+    Quando submeto um novo desastre com:
       """
       {
         "tipo": "Enchente",
@@ -35,12 +38,15 @@ Funcionalidade: API de Gerenciamento de Desastres
         "localizacaoId": <locationId>
       }
       """
-    Então o status da resposta deve ser 201
-    E a resposta deve conter um ID de desastre
+    Então o sistema retorna status 201
+    E contém um ID válido
 
   Cenário: Tentativa de criação de desastre com dados inválidos
-    Dado que existe um usuário cadastrado
-    Quando eu envio uma requisição POST para "/desastres" com dados incompletos:
+    Dado que o sistema está configurado
+    E um novo usuário com:
+      | nome         | email            | senha    | telefone     |
+      | Carlos Souza | carlos@email.com | senha789 | 11977777777  |
+    Quando submeto um novo desastre com:
       """
       {
         "tipo": "Enchente",
@@ -50,10 +56,27 @@ Funcionalidade: API de Gerenciamento de Desastres
         "usuarioId": <userId>
       }
       """
-    Então o status da resposta deve ser 500
+    Então o sistema retorna status 500
 
   Cenário: Consulta de desastres por localização
-    Dado que existem desastres registrados para "São Paulo"
-    Quando eu envio uma requisição GET para "/desastres/<locationId>"
-    Então o status da resposta deve ser 200
-    E a resposta deve conter uma lista não vazia de desastres
+    Dado que o sistema está configurado
+    E um novo usuário com:
+      | nome       | email           | senha    | telefone     |
+      | Ana Costa  | ana@email.com   | senha321 | 11966666666  |
+    E uma nova localização com:
+      | nome      | latitude | longitude | tipo    |
+      | São Paulo | -23.5505 | -46.6333  | Urbano  |
+    Quando submeto um novo desastre com:
+      """
+      {
+        "tipo": "Deslizamento",
+        "data": "2025-05-04",
+        "intensidade": 3,
+        "duracao": 1,
+        "usuarioId": <userId>,
+        "localizacaoId": <locationId>
+      }
+      """
+    E busco desastres por localização
+    Então o sistema retorna status 200
+    E lista de desastres não está vazia
