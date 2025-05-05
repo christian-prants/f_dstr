@@ -97,7 +97,7 @@ public class ApiTests {
         .when()
             .post("/desastres")
         .then()
-            .statusCode(200)
+            .statusCode(201)
             .body("id", notNullValue());
     }
 
