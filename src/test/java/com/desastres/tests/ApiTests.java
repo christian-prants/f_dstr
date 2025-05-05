@@ -41,10 +41,10 @@ public class ApiTests {
             .post("/api/users")
         .then()
             .statusCode(200)
-            .body("id_usuario", notNullValue())
+            .body("id", notNullValue())
             .extract().response();
-
-        userId = response.path("id_usuario");
+        System.out.println("AAAAAAAAAAAAA = " + response);
+        userId = response.path("id");
     }
 
     @Test
@@ -64,10 +64,10 @@ public class ApiTests {
             .post("/localizacoes")
         .then()
             .statusCode(201)
-            .body("id_localizacao", notNullValue())
+            .body("id", notNullValue())
             .extract().response();
-
-        locationId = response.path("id_localizacao");
+        System.out.println("AAAAAAAAAAAAA = " + response);
+        locationId = response.path("id");
     }
 
     @Test
