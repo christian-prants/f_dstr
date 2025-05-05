@@ -15,8 +15,8 @@ import static org.hamcrest.Matchers.*;
 @ActiveProfiles("test")
 public class ApiTests {
 
-    private static Long userId;
-    private static Long locationId;
+    private static Integer userId;
+    private static Integer locationId;
 
     @BeforeAll
     public static void setup() {
@@ -47,7 +47,7 @@ public class ApiTests {
         System.out.println("Resposta formatada:");
         response.prettyPrint();
 
-        userId = response.path("id");
+        userId = Long.valueOf(userResponse.path("id").toString());
     }
 
     @Test
@@ -73,7 +73,7 @@ public class ApiTests {
         System.out.println("Resposta formatada:");
         response.prettyPrint();
         
-        locationId = response.path("id");
+        locationId = Long.valueOf(locationResponse.path("id").toString());
     }
 
     @Test
@@ -110,7 +110,7 @@ public class ApiTests {
             + "\"data\": \"2025-05-04\","
             + "\"intensidade\": 4,"
             + "\"duracao\": 2,"
-            + "\"usuarioId\":  1"
+            + "\"usuarioId\": 1"
             + "}");
 
         given()
