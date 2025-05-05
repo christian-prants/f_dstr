@@ -13,8 +13,7 @@ import org.junit.runner.RunWith;
         "html:target/cucumber-reports.html",
         "json:target/cucumber.json",
         "junit:target/cucumber-reports.xml"
-    },
-    tags = "@api"
+    }
 )
 public class CucumberIT {
 }
