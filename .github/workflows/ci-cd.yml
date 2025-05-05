@@ -38,7 +38,7 @@ jobs:
         sleep 30
 
     - name: Run integration tests & BDD Tests
-      run: mvn -B verify -DskipUnitTests=true
+      run: mvn -B failsafe:integration-test failsafe:verify
       
     - name: Stop application
       run: pkill -f 'java -jar'
