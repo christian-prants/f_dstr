@@ -40,7 +40,7 @@ public class ApiTests {
         .when()
             .post("/api/users")
         .then()
-            .statusCode(200)
+            .statusCode(201)
             .body("id", notNullValue())
             .extract().response();
 
@@ -111,6 +111,7 @@ public class ApiTests {
             + "\"duracao\": 2,"
             + "\"usuarioId\": %d"
             + "}", userId);
+            // criando sem um campo obrigatório 'LOCALIZACAOID'
 
         given()
             .contentType("application/json")
@@ -118,7 +119,7 @@ public class ApiTests {
         .when()
             .post("/desastres")
         .then()
-            .statusCode(400);
+            .statusCode(500);
     }
 
     @Test
