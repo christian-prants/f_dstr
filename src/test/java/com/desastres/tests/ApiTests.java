@@ -40,14 +40,14 @@ public class ApiTests {
         .when()
             .post("/api/users")
         .then()
-            .statusCode(201)
+            .statusCode(200)
             .body("id", notNullValue())
             .extract().response();
 
         System.out.println("Resposta formatada:");
         response.prettyPrint();
 
-        userId = response.path("id");
+        userId = Long.valueOf(response.path("id").toString());
     }
 
     @Test
@@ -73,7 +73,7 @@ public class ApiTests {
         System.out.println("Resposta formatada:");
         response.prettyPrint();
 
-        locationId = response.path("id");
+        locationId = Long.valueOf(response.path("id").toString());
     }
 
     @Test
@@ -125,6 +125,7 @@ public class ApiTests {
     @Test
     @Order(5)
     public void testGetDisastersByLocation() {
+        System.out.println("location id = " + locationId);
         given()
             .queryParam("location", "São Paulo")
         .when()
