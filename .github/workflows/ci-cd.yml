@@ -8,6 +8,7 @@ on:
 
 env:
   DOCKER_IMAGE: christianprants/desastres
+  MAVEN_OPTS: -Djava.security.egd=file:/dev/./urandom
 
 jobs:
   # --------------------------------------------
@@ -24,38 +25,45 @@ jobs:
       with:
         java-version: '11'
         distribution: 'temurin'
+        cache: 'maven'
         
-    - name: Run unit tests
+    - name: Build with Maven
+      run: mvn -B clean package
+      
+    - name: Start application for tests
+      run: |
+        nohup java -jar target/*.jar > application.log 2>&1 &
+        echo "Waiting for app to start..."
+        timeout 60 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' http://localhost:8080/actuator/health)" != "200" ]]; do 
+          sleep 5; 
+          echo "Waiting for application to start..."; 
+        done'
+        cat application.log
+        
+    - name: Run Unit Tests
       run: mvn -B test
       
-    - name: Build with Maven
-      run: mvn -B package --file pom.xml
-      
-    - name: Start application for integration tests
-      run: |
-        nohup java -jar target/*.jar &
-        echo "Waiting for app to start..."
-        sleep 30
-
-    - name: Run integration tests
+    - name: Run Integration Tests
       run: mvn -B verify -DskipUnitTests=true
       
-    - name: Stop application
-      run: pkill -f 'java -jar'
-
     - name: Run BDD Tests
-      run: mvn test -Dtest=CucumberIT
+      run: |
+        mvn test -Dtest=CucumberIT \
+          -Dcucumber.plugin="html:target/cucumber-reports/cucumber.html,json:target/cucumber-reports/cucumber.json"
+        cat target/cucumber-reports/cucumber.json | jq .
+        
+    - name: Stop application
+      run: pkill -f 'java -jar' || true
 
-    - name: Run API Tests
-      run: mvn test -Dtest=ApiTests
-
-    - name: Upload Reports
+    - name: Upload Test Reports
       uses: actions/upload-artifact@v4
       with:
         name: test-reports
         path: |
-          target/cucumber-reports.html
           target/surefire-reports
+          target/failsafe-reports
+          target/cucumber-reports
+        if-no-files-found: warn
       
     - name: Build Docker image
       run: docker build -t ${{ env.DOCKER_IMAGE }}:latest .
@@ -87,12 +95,10 @@ jobs:
 
       - name: Install Kind and kubectl
         run: |
-          # Instala Kind
           curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.20.0/kind-linux-amd64
           chmod +x ./kind
           sudo mv ./kind /usr/local/bin/kind
           
-          # Instala kubectl
           curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
           chmod +x kubectl
           sudo mv kubectl /usr/local/bin/
@@ -123,16 +129,23 @@ jobs:
 
       - name: Deploy to Staging
         run: |
-          # Cria namespace se não existir
           kubectl create namespace staging --dry-run=client -o yaml | kubectl apply -f -
-          
-          # Aplica os manifests
           kubectl apply -f k8s/staging-deployment.yaml
           kubectl apply -f k8s/staging-service.yaml
           
-          # Verifica os recursos implantados
-          kubectl get all -n staging
           kubectl rollout status deployment/app-staging -n staging --timeout=90s
+          kubectl get all -n staging
+          
+          # Health check
+          kubectl port-forward svc/app-staging 8080:80 -n staging --address=0.0.0.0 > /dev/null 2>&1 &
+          sleep 10
+          curl -s http://localhost:8080/actuator/health | jq .
+
+      - name: Clean up
+        if: always()
+        run: |
+          pkill -f 'kubectl port-forward' || true
+          kind delete cluster --name staging || true
 
   # --------------------------------------------
   # ESTÁGIO 3: Deploy para Production
@@ -164,7 +177,7 @@ jobs:
           - role: control-plane
             extraPortMappings:
             - containerPort: 80
-              hostPort: 81  # Porta diferente para produção
+              hostPort: 81
               protocol: TCP
           EOF
 
@@ -179,11 +192,18 @@ jobs:
           kubectl create namespace production --dry-run=client -o yaml | kubectl apply -f -
           kubectl apply -f k8s/production-deployment.yaml
           kubectl apply -f k8s/production-service.yaml
-          kubectl get all -n production
+          
           kubectl rollout status deployment/app-production -n production --timeout=90s
+          kubectl get all -n production
+          
+          # Health check
+          kubectl port-forward svc/app-production 8081:80 -n production --address=0.0.0.0 > /dev/null 2>&1 &
+          sleep 10
+          curl -s http://localhost:8081/actuator/health | jq .
 
-      - name: Clean up clusters (optional)
+      - name: Clean up clusters
         if: always()
         run: |
-          kind delete cluster --name staging
-          kind delete cluster --name production
+          pkill -f 'kubectl port-forward' || true
+          kind delete cluster --name staging || true
+          kind delete cluster --name production || true
