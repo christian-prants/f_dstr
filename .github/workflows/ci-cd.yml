@@ -38,10 +38,11 @@ jobs:
         sleep 30
 
     - name: Debug - List test files
-      run: find . -name '*tests.feature'
+      run: find . -name '*DisasterSteps.java'
 
     - name: Run integration tests & BDD Tests
-      run: mvn -B failsafe:integration-test failsafe:verify
+      run: mvn verify -x
+      
       
     - name: Stop application
       run: pkill -f 'java -jar'
