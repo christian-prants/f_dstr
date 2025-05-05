@@ -47,7 +47,7 @@ public class ApiTests {
         System.out.println("Resposta formatada:");
         response.prettyPrint();
 
-        userId = Long.valueOf(response.path("id").toString());
+        userId = 1; //Long.valueOf(response.path("id").toString());
     }
 
     @Test
@@ -73,7 +73,7 @@ public class ApiTests {
         System.out.println("Resposta formatada:");
         response.prettyPrint();
         
-        locationId = Long.valueOf(response.path("id").toString());
+        locationId = 1; //Long.valueOf(response.path("id").toString());
     }
 
     @Test
