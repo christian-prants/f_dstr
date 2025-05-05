@@ -41,7 +41,7 @@ jobs:
       run: find . -name '*DisasterSteps.java'
 
     - name: Run integration tests & BDD Tests
-      run: mvn verify -x
+      run: mvn verify -X
       
       
     - name: Stop application
