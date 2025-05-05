@@ -38,7 +38,7 @@ jobs:
         sleep 30
 
     - name: Debug - List test files
-      run: find . -name '*CucumberIT.java'
+      run: find . -name '*tests.feature'
 
     - name: Run integration tests & BDD Tests
       run: mvn -B failsafe:integration-test failsafe:verify
