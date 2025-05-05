@@ -41,10 +41,10 @@ public class ApiTests {
             .post("/api/users")
         .then()
             .statusCode(200)
-            .body("id", notNullValue())
+            .body("id_usuario", notNullValue())
             .extract().response();
 
-        userId = response.path("id");
+        userId = response.path("id_usuario");
     }
 
     @Test
@@ -64,15 +64,18 @@ public class ApiTests {
             .post("/localizacoes")
         .then()
             .statusCode(201)
-            .body("id", notNullValue())
+            .body("id_localizacao", notNullValue())
             .extract().response();
 
-        locationId = response.path("id");
+        locationId = response.path("id_localizacao");
     }
 
     @Test
     @Order(3)
     public void testCreateDisasterSuccess() {
+        System.out.println("userId = " + userId);        
+        System.out.println("locationId = " + locationId); 
+        
         String disasterJson = String.format("{"
             + "\"tipo\": \"Enchente\","
             + "\"data\": \"2025-05-04\","
