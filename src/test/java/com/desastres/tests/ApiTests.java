@@ -43,7 +43,10 @@ public class ApiTests {
             .statusCode(200)
             .body("id", notNullValue())
             .extract().response();
-        System.out.println("AAAAAAAAAAAAA = " + response);
+
+        System.out.println("Resposta formatada:");
+        response.prettyPrint();
+
         userId = response.path("id");
     }
 
@@ -66,7 +69,10 @@ public class ApiTests {
             .statusCode(201)
             .body("id", notNullValue())
             .extract().response();
-        System.out.println("AAAAAAAAAAAAA = " + response);
+        
+        System.out.println("Resposta formatada:");
+        response.prettyPrint();
+        
         locationId = response.path("id");
     }
 
